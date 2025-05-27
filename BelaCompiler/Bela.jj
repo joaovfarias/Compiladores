@@ -1,0 +1,107 @@
+PARSER_BEGIN(Bela)
+import java.io.*;
+public class Bela {
+
+  public static void main(String args[]) throws ParseException,IOException {
+    
+ 	Bela analisador = new Bela(new FileInputStream(args[0]));
+ 	analisador.Bela();
+  }
+
+}
+
+PARSER_END(Bela)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  <MAIN: "main">
+|<APAR: "(">
+|<FPAR: ")">  
+| <ACHAVES: "{">
+| <FCHAVES: "}">
+| <VAR: "var">
+| <PVIRGULA: ";">
+| <TIPOFLOAT: "float">
+| <TIPOBOOL: "bool">
+| <TIPOVOID: "void">
+| <ATRIBUICAO: "=">
+| <IF: "if">
+| <THEN: "then">
+| <WHILE: "while">
+| <readInput: "readInput">
+| <RETURN: "return">
+| <PRINTLN : "printLn">
+| <OPMAIS: "+">
+| <OPMENOS: "-">
+| <OPMULT: "*">
+| <OPDIV: "/">
+| <OPE: "&&">
+| <OPOU: "||">
+| <OPMENOR: "<">
+| <OPMAIOR: ">" >
+| <OPIGUAL: "==">
+| <VIRGULA: "," >
+| <FUNCAO: "fun">
+}
+
+TOKEN :
+{
+  <NUM : (["0"-"9"])+ ("." (["0"-"9"])+)?  ("E" ("+" | "-")? (["0"-"9"])+)? >
+ |< ID: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"])* (("_" ["a"-"z","A"-"Z","0"-"9"])+ )*>
+}
+
+
+
+void Bela () :
+{Token t;}
+{
+
+(
+  <MAIN> { System.out.println("Palavra reservada: main");}
+|  <VAR> { System.out.println("Palavra reservada: var");}
+| <PRINTLN> { System.out.println("Palavra reservada: printLn");}
+| <APAR> { System.out.println("Abre parênteses: (");}
+| <FPAR> { System.out.println("Fecha parênteses: )");}
+| <ACHAVES> { System.out.println("Abre chaves: {");}
+| <FCHAVES> { System.out.println("Fecha chaves: }");}  
+| <TIPOFLOAT> { System.out.println("Tipo: float");}
+| <TIPOBOOL> { System.out.println("Tipo: bool");}
+| <TIPOVOID> { System.out.println("Tipo: void");}
+| <PVIRGULA> { System.out.println("Ponto e vírgula: ;");}
+| <ATRIBUICAO> { System.out.println("Atribuição: =");}
+| <IF> { System.out.println("Palavra reservada: if");}
+| <THEN> { System.out.println("Palavra reservada: then");}
+| <WHILE> { System.out.println("Palavra reservada: while");}
+| <readInput> { System.out.println("Palavra reservada: readInput");}
+| <RETURN> { System.out.println("Palavra reservada: return");}
+| <OPMAIS> { System.out.println("Operador: +");}
+| <OPMENOS> { System.out.println("Operador: -");}
+| <OPMULT> { System.out.println("Operador: *");}
+| <OPDIV> { System.out.println("Operador: /");}
+| <OPE> { System.out.println("Operador lógico: &&");}
+| <OPOU> { System.out.println("Operador lógico: ||");}
+| <OPMENOR> { System.out.println("Operador: <");}
+| <OPMAIOR> { System.out.println("Operador: >");}
+| <OPIGUAL> { System.out.println("Operador: ==");}
+| <VIRGULA> { System.out.println("Vírgula: ,");}
+| t=<FUNCAO> { System.out.println("Função: "+ t.image);}
+| t=<NUM> { System.out.println("Número: "+ t.image);}
+| t=<ID> { System.out.println("Identificador: "+ t.image);}
+)*
+<EOF> 
+
+
+}
+
+
+
+
+
