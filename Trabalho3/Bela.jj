@@ -1,0 +1,270 @@
+PARSER_BEGIN(Bela)
+import java.io.*;
+public class Bela {
+
+  public static void main(String args[]) throws ParseException,IOException {
+    
+ 	Bela analisador = new Bela(new FileInputStream(args[0]));
+ 	analisador.Bela();
+  }
+
+}
+
+PARSER_END(Bela)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  <MAIN: "main">
+|<APAR: "(">
+|<FPAR: ")">  
+| <ACHAVES: "{">
+| <FCHAVES: "}">
+| <VAR: "var">
+| <PVIRGULA: ";">
+| <TRUE: "true">
+| <FALSE: "false">
+| <TIPOFLOAT: "float">
+| <TIPOBOOL: "bool">
+| <TIPOVOID: "void">
+| <ATRIBUICAO: "=">
+| <IF: "if">
+| <THEN: "then">
+| <WHILE: "while">
+| <readInput: "readInput">
+| <RETURN: "return">
+| <PRINTLN : "printLn">
+| <OPMAIS: "+">
+| <OPMENOS: "-">
+| <OPMULT: "*">
+| <OPDIV: "/">
+| <OPE: "&&">
+| <OPOU: "||">
+| <OPMENOR: "<">
+| <OPMAIOR: ">" >
+| <OPIGUAL: "==">
+| <VIRGULA: "," >
+| <FUNCAO: "fun">
+}
+
+TOKEN :
+{
+  <NUM : (["0"-"9"])+ ("." (["0"-"9"])+)?  ("E" ("+" | "-")? (["0"-"9"])+)? >
+ |< ID: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"])* (("_" ["a"-"z","A"-"Z","0"-"9"])+ )*>
+}
+
+
+void Bela () : 
+{}
+{
+
+  Main() FuncList()
+  <EOF>
+
+}
+
+void Main () :
+{}
+{
+
+  <MAIN> <APAR> <FPAR> <ACHAVES> Vardecl() Seqcomandos() <FCHAVES>
+
+}
+
+void Vardecl() :
+{}
+{
+
+  ( <VAR> Tipo() <ID> <PVIRGULA> )*
+
+}
+
+void Tipo() :
+{}
+{
+
+  ( <TIPOFLOAT> | <TIPOBOOL> | <TIPOVOID> )
+
+}
+
+void Seqcomandos() :
+{}
+{
+
+  Comando() SeqcomandosL()
+
+}
+
+void SeqcomandosL() :
+{}
+{
+
+  ( Comando() SeqcomandosL() )?
+
+}
+
+void Comando() :
+{}
+{
+
+  <ID> ComandoId()
+  | <IF> Exp() <THEN> <ACHAVES> Seqcomandos() <FCHAVES> <PVIRGULA>
+  | <WHILE> Exp() <ACHAVES> Seqcomandos() <FCHAVES> <PVIRGULA>
+  | <RETURN> Exp() <PVIRGULA>
+  | <PRINTLN> Exp() <PVIRGULA>
+
+}
+
+void ComandoId() :
+{}
+{
+
+  <ATRIBUICAO> ComandoAtrib()
+  | <APAR> ( ListaExp() )? <FPAR> <PVIRGULA>
+
+}
+
+void ComandoAtrib() :
+{}
+{
+  <readInput> <APAR> <FPAR> <PVIRGULA>
+  | Exp() <PVIRGULA>
+
+}
+
+void Exp() :
+{}
+{
+
+  <APAR> Exp() Op() Exp() <FPAR> | Fator()
+
+}
+
+void Fator() :
+{}
+{
+  <ID> FatorID()
+  | <NUM>
+  | <TRUE>
+  | <FALSE>
+}
+
+void FatorID() :
+{}
+{
+  ( <APAR> ( ListaExp() )? <FPAR> )?
+  
+}
+
+void Op() :
+{}
+{
+
+  <OPMAIS> | <OPMENOS> | <OPMULT> | <OPDIV> | <OPE> | <OPOU> | <OPMENOR> | <OPMAIOR> | <OPIGUAL>
+
+}
+
+
+void ListaExp() :
+{}
+{
+
+  Exp() ListaExpL()
+
+}
+
+void ListaExpL() :
+{}
+{
+
+  ( <VIRGULA> Exp() ListaExpL() )?
+
+}
+
+
+void FuncList() :
+{}
+{
+
+  ( Func() )*
+
+}
+void Func() :
+{}
+{
+
+  <FUNCAO> Tipo() <ID> <APAR> ( ListaArg() )? <FPAR> <ACHAVES> Vardecl() Seqcomandos() <FCHAVES>
+
+}
+
+void ListaArg() :
+{}
+{
+
+  Tipo() <ID> ListaArgL()
+
+}
+
+void ListaArgL() :
+{}
+{
+
+  ( <VIRGULA> Tipo() <ID> ListaArgL() )?
+
+}
+
+
+void ListaTokens () :
+{Token t;}
+{
+
+(
+  <MAIN> { System.out.println("Palavra reservada: main");}
+|  <VAR> { System.out.println("Palavra reservada: var");}
+| <PRINTLN> { System.out.println("Palavra reservada: printLn");}
+| <APAR> { System.out.println("Abre parênteses: (");}
+| <FPAR> { System.out.println("Fecha parênteses: )");}
+| <ACHAVES> { System.out.println("Abre chaves: {");}
+| <FCHAVES> { System.out.println("Fecha chaves: }");}  
+| <TIPOFLOAT> { System.out.println("Tipo: float");}
+| <TIPOBOOL> { System.out.println("Tipo: bool");}
+| <TIPOVOID> { System.out.println("Tipo: void");}
+| <PVIRGULA> { System.out.println("Ponto e vírgula: ;");}
+| <TRUE> { System.out.println("Palavra reservada: true");}
+| <FALSE> { System.out.println("Palavra reservada: false");}
+| <ATRIBUICAO> { System.out.println("Atribuição: =");}
+| <IF> { System.out.println("Palavra reservada: if");}
+| <THEN> { System.out.println("Palavra reservada: then");}
+| <WHILE> { System.out.println("Palavra reservada: while");}
+| <readInput> { System.out.println("Palavra reservada: readInput");}
+| <RETURN> { System.out.println("Palavra reservada: return");}
+| <OPMAIS> { System.out.println("Operador: +");}
+| <OPMENOS> { System.out.println("Operador: -");}
+| <OPMULT> { System.out.println("Operador: *");}
+| <OPDIV> { System.out.println("Operador: /");}
+| <OPE> { System.out.println("Operador lógico: &&");}
+| <OPOU> { System.out.println("Operador lógico: ||");}
+| <OPMENOR> { System.out.println("Operador: <");}
+| <OPMAIOR> { System.out.println("Operador: >");}
+| <OPIGUAL> { System.out.println("Operador: ==");}
+| <VIRGULA> { System.out.println("Vírgula: ,");}
+| t=<FUNCAO> { System.out.println("Função: "+ t.image);}
+| t=<NUM> { System.out.println("Número: "+ t.image);}
+| t=<ID> { System.out.println("Identificador: "+ t.image);}
+)*
+<EOF> 
+
+
+}
+
+
+
+
+

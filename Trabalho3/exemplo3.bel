@@ -1,0 +1,49 @@
+main () {
+
+    var float resultado;
+    var bool condicao;
+
+    resultado = calcula(5, 2);
+    condicao = (true && false);
+
+    if (condicao == false) then {
+        printLn resultado;
+    };
+
+    printLn (resultado + 10);
+
+    resultado = readInput();
+    printLn resultado;
+
+    return (resultado * 2);
+}
+
+fun float calcula(float a, float b) {
+
+    var float soma;
+    var float mult;
+    var float final;
+
+    soma = (a + b);
+    mult = (a * b);
+
+    while ((b > 0) && (a > 0)) {
+        soma = (soma + 1);
+        b = (b - 1);
+    };
+
+    final = operacaoLogica(soma, mult);
+
+    return final;
+}
+
+fun float operacaoLogica(float x, float y) {
+
+    var float resultado;
+
+    if ((x > y) || (x == y)) then {
+        resultado = (x - y);
+    };
+
+    return resultado;
+}
