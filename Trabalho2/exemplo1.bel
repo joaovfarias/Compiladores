@@ -1,0 +1,18 @@
+main () {
+    var float contador;
+    contador = 0;
+
+    adiciona(10, contador);
+
+    printLn contador;
+}
+
+
+fun float adiciona(float vezes, float contador){
+    while (vezes > 0){
+        contador = (contador + 1);
+        vezes = (vezes - 1);
+    };
+
+    return contador;
+}

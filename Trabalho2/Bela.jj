@@ -23,8 +23,8 @@ SKIP :
 TOKEN :
 {
   <MAIN: "main">
-|<APAR: "(">
-|<FPAR: ")">  
+| <APAR: "(">
+| <FPAR: ")">  
 | <ACHAVES: "{">
 | <FCHAVES: "}">
 | <VAR: "var">
