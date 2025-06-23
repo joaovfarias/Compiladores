@@ -12,12 +12,12 @@ class Compilador{
 			arv = as.parseProg();
 		
 			// Código Máquina de Pilha Hipotética (retorna código gerado)
-			CodeGen backend = new CodeGen();
-			String codigo_mp = backend.geraCodigo(arv);
+			CodeGen backend_mp = new CodeGen();
+			String codigo_mp = backend_mp.geraCodigo(arv);
 
 			// Código Interpretador (retorna resultado da execução)
-			CodeInter backend = new CodeInter();
-			int codigo_inter = backend.calculaCodigo(arv);
+			CodeInter backend_inter = new CodeInter();
+			int codigo_inter = backend_inter.calculaCodigo(arv);
 			
 			// Imprime o código gerado
 			System.out.println("Código gerado:\n" + codigo_mp);

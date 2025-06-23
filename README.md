@@ -1,4 +1,6 @@
 # Compiladores
+João Vitor Farias e Graziele Fagundes
+
 ## Trabalho 1
 - javac *.java
 - java Compilador teste
