@@ -20,7 +20,7 @@ João Vitor Farias e Graziele Fagundes
 - java Bela exemplo3.bel
 - java Bela exemplo4.bel
 
-## Trabalho 4
+## Trabalho Final
 - javacc Bela.jj
 - javac *.java
 - java Bela ./exemplos/soma.bel
