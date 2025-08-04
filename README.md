@@ -19,3 +19,10 @@ João Vitor Farias e Graziele Fagundes
 - java Bela exemplo2.bel
 - java Bela exemplo3.bel
 - java Bela exemplo4.bel
+
+## Trabalho 4
+- javacc Bela.jj
+- javac *.java
+- java Bela ./exemplos/soma.bel
+- java Bela ./exemplos/fatorial.bel
+- java Bela ./exemplos/fibonacci.bel
