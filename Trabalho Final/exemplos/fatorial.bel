@@ -1,0 +1,15 @@
+main () {
+    var float resultado;
+
+    resultado = fatorialRecursivo(5);
+
+    printLn resultado;
+}
+
+fun float fatorialRecursivo(float n){
+    if (n < 1) then {
+        return 1;
+    };
+
+    return ( n * fatorialRecursivo((n - 1)) );
+}

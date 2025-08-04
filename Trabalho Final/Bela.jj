@@ -1,0 +1,306 @@
+// Autores: Graziele Fagundes e João Vitor Farias
+
+PARSER_BEGIN(Bela) 
+import ast.*;
+import java.io.*;
+import java.util.ArrayList;
+
+public class Bela {
+  public static void main(String args[]) throws ParseException, IOException {
+    
+    FileInputStream fs = new FileInputStream(new File(args[0]));
+
+    Bela parser = new Bela(fs);
+
+    Prog arvore = parser.Bela();
+
+    String codigoJava = geraCodigo(arvore, args[0]);
+    System.out.println(codigoJava);
+  }
+
+  public static String geraCodigo(Prog prog, String arquivo) throws IOException {
+      String codigoJava = prog.geraCodigoJava();
+
+      // Salva o código gerado em um arquivo .java
+      File file = new File("Programa.java");
+      if (file.exists()) {
+          file.delete();
+      }
+      FileWriter writer = new FileWriter(file);
+      writer.write(codigoJava);
+      writer.flush();
+      writer.close();
+      
+      return codigoJava;
+  }
+}
+
+PARSER_END(Bela)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  <MAIN: "main">
+| <APAR: "(">
+| <FPAR: ")">  
+| <ACHAVES: "{">
+| <FCHAVES: "}">
+| <VAR: "var">
+| <PVIRGULA: ";">
+| <TRUE: "true">
+| <FALSE: "false">
+| <TIPOFLOAT: "float">
+| <TIPOBOOL: "bool">
+| <TIPOVOID: "void">
+| <ATRIBUICAO: "=">
+| <IF: "if">
+| <THEN: "then">
+| <WHILE: "while">
+| <readInput: "readInput">
+| <RETURN: "return">
+| <PRINTLN : "printLn">
+| <OPMAIS: "+">
+| <OPMENOS: "-">
+| <OPMULT: "*">
+| <OPDIV: "/">
+| <OPE: "&&">
+| <OPOU: "||">
+| <OPMENOR: "<">
+| <OPMAIOR: ">" >
+| <OPIGUAL: "==">
+| <VIRGULA: "," >
+| <FUNCAO: "fun">
+}
+
+TOKEN :
+{
+  <NUM : (["0"-"9"])+ ("." (["0"-"9"])+)?  ("E" ("+" | "-")? (["0"-"9"])+)? >
+ |<ID: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"])* (("_" ["a"-"z","A"-"Z","0"-"9"])+ )*>
+}
+
+
+// BELA -> MAIN FUNC?
+Prog Bela() : {
+  Main main;
+  Fun f;
+  ArrayList<Fun> funcoes = new ArrayList<Fun>(); 
+}
+{
+  main = Main()
+  ( f = Func() { funcoes.add(f); } )*
+  {
+    return new Prog(main, funcoes);
+  }
+}
+
+
+// MAIN -> "main" "(" ")" "{" VARDECL SEQCOMANDOS "}"
+Main Main() :
+{
+  ArrayList<VarDecl> varDecls = new ArrayList<VarDecl>();
+  ArrayList<Comando> seqComandos = new ArrayList<Comando>();
+  VarDecl vd;
+}
+{
+  <MAIN> <APAR> <FPAR> <ACHAVES>
+  ( vd = VarDecl() { varDecls.add(vd); } )*
+  seqComandos = SeqComandos() <FCHAVES>
+  {
+    return new Main(varDecls, seqComandos);
+  }
+}
+
+// VARDECL -> ("var" TIPO TOKEN_id ";")*
+VarDecl VarDecl() :
+{
+  Token tipo, idToken;
+}
+{
+  <VAR> tipo = Tipo() idToken = <ID> <PVIRGULA>
+  {
+    return new VarDecl(tipo.image, idToken.image);
+  }
+}
+
+
+// TIPO -> "float" | "bool" | "void"
+Token Tipo() :
+{
+  Token tipo;
+}
+{
+  ( tipo = <TIPOFLOAT> { return tipo; }
+  | tipo = <TIPOBOOL> { return tipo; }
+  | tipo = <TIPOVOID> { return tipo; }
+  )
+}
+
+
+// SEQCOMANDOS -> (COMANDO)*
+ArrayList<Comando> SeqComandos() :
+{
+  ArrayList<Comando> comandos = new ArrayList<Comando>();
+  Comando c;
+}
+{
+  ( c = Comando() { comandos.add(c); } )*
+  {
+    return comandos;
+  }
+}
+
+
+// COMANDO -> TOKEN_id ( "(" LISTAEXP? ")" ";" 
+//                     | ("=" (EXP ";"  | "readInput" "(" ")" ";") ) 
+//         | "if" EXP "then" "{" SEQCOMANDOS "}" ";"
+//         | "while" EXP "{" SEQCOMANDOS "}" ";"
+//         | "return" EXP ";"
+//         | "printLn" EXP ";"
+Comando Comando() :
+{
+  Token idToken = null, ifToken = null, whileToken = null, returnToken = null, printToken = null;
+  Exp exp, condicao = null;
+  ArrayList<Exp> listaExp = null;
+  ArrayList<Comando> seqComandos = null;
+}
+{
+  (
+    idToken = <ID>
+    (
+      <APAR> ( listaExp = ListaExp() )? <FPAR> <PVIRGULA>
+      { return new CChamadaFun(idToken.beginLine, idToken.image, listaExp); }
+    |
+      <ATRIBUICAO> ( exp = Exp() <PVIRGULA> { return new CAtribuicao(idToken.beginLine, idToken.image, exp); }
+      | <readInput> <APAR> <FPAR> <PVIRGULA> { return new CReadInput(idToken.beginLine, idToken.image); } )
+    )
+  | ifToken = <IF> condicao = Exp() <THEN> <ACHAVES> seqComandos = SeqComandos() <FCHAVES> <PVIRGULA>
+    { return new CIf(ifToken.beginLine, condicao, seqComandos); }
+  
+  | whileToken = <WHILE> condicao = Exp() <ACHAVES> seqComandos = SeqComandos() <FCHAVES> <PVIRGULA>
+    { return new CWhile(whileToken.beginLine, condicao, seqComandos); }
+
+  | returnToken = <RETURN> exp = Exp() <PVIRGULA>
+    { return new CReturn(returnToken.beginLine, exp); }
+
+  | printToken = <PRINTLN> exp = Exp() <PVIRGULA>
+    { return new CPrint(printToken.beginLine, exp); }
+  )
+}
+
+
+// EXP -> "(" EXP OP EXP ")" | FATOR
+Exp Exp() :
+{
+  Exp left, right;
+  Token op;
+  Exp fator;
+}
+{
+  ( <APAR> left = Exp() op = Op() right = Exp() <FPAR>
+    { return new EOpExp(op.image, left, right); }
+  | fator = Fator()
+    {
+      return fator;
+    }
+  )
+}
+
+
+// FATOR -> TOKEN_id ("(" LISTAEXP? ")")? | TOKEN_numliteral | "true" | "false"
+Exp Fator() :
+{
+  Token idToken, numToken = null;
+  ArrayList<Exp> listaExp = null;
+}
+{
+  (
+    idToken = <ID>
+    (
+      <APAR> ( listaExp = ListaExp() )? <FPAR>
+      { return new EChamadaFun(idToken.image, listaExp); }
+    |
+      { return new EVar(idToken.image); }
+    )
+  |
+    numToken = <NUM> { return new EFloat(Float.parseFloat(numToken.image)); }
+  |
+    <TRUE> { return new ETrue(); }
+  |
+    <FALSE> { return new EFalse(); }
+  )
+}
+
+
+// OP -> "+" | "-" | "*" | "/" | "&&" | "||" | "<" | ">" | "=="
+Token Op() :
+{
+  Token op;
+}
+{
+  ( op = <OPMAIS> { return op; }
+  | op = <OPMENOS> { return op; }
+  | op = <OPMULT> { return op; }
+  | op = <OPDIV> { return op; }
+  | op = <OPE> { return op; }
+  | op = <OPOU> { return op; }
+  | op = <OPMENOR> { return op; }
+  | op = <OPMAIOR> { return op; }
+  | op = <OPIGUAL> { return op; }
+  )
+}
+
+
+// LISTAEXP -> EXP ("," EXP)*
+ArrayList<Exp> ListaExp() :
+{
+  ArrayList<Exp> listaExp = new ArrayList<Exp>();
+  Exp exp;
+}
+{
+  exp = Exp() { listaExp.add(exp); }
+  ( <VIRGULA> exp = Exp() { listaExp.add(exp); } )*
+  { return listaExp; }
+}
+
+
+// FUNC -> ("fun" TIPO TOKEN_id "(" LISTAARG? ")" "{" VARDECL SEQCOMANDOS "}")+
+Fun Func() :
+{
+  Token tipo, idToken;
+  ArrayList<ParamFormalFun> listaArg = new ArrayList<ParamFormalFun>();
+  ArrayList<VarDecl> varDecls = new ArrayList<VarDecl>();
+  ArrayList<Comando> seqComandos = new ArrayList<Comando>();
+  VarDecl vd;
+}
+{
+  <FUNCAO> tipo = Tipo() idToken = <ID> <APAR>
+
+  ( listaArg = ListaArg() )? <FPAR> <ACHAVES>
+
+  ( vd = VarDecl() { varDecls.add(vd); } )*
+
+  seqComandos = SeqComandos() <FCHAVES>
+  {
+    return new Fun(idToken.image, listaArg, tipo.image, varDecls, seqComandos);
+  }
+}
+
+
+//LISTAARG -> TIPO TOKEN_id ("," TIPO TOKEN_id)*
+ArrayList<ParamFormalFun> ListaArg() :
+{
+  ArrayList<ParamFormalFun> listaArg = new ArrayList<ParamFormalFun>();
+  Token tipo, idToken;
+}
+{
+  tipo = Tipo() idToken = <ID> { listaArg.add(new ParamFormalFun(tipo.image, idToken.image)); }
+  ( <VIRGULA> tipo = Tipo() idToken = <ID> { listaArg.add(new ParamFormalFun(tipo.image, idToken.image)); } )*
+  { return listaArg; }
+}
